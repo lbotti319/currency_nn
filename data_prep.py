@@ -2,10 +2,16 @@ import pandas as pd
 import numpy as np
 
 
-def fetch_data(filepath="data/Foreign_Exchange_Rates.csv"):
+def fetch_data(filepath="data/Foreign_Exchange_Rates.csv", num_currencies=1):
     df = pd.read_csv("data/Foreign_Exchange_Rates.csv", index_col=0, na_values=["ND"])
-    df = df[["Time Serie", "EURO AREA - EURO/US$"]]
-    df.columns = ["day", "EURO"]
+    if num_currencies == 1:
+        df = df[["Time Serie", "EURO AREA - EURO/US$"]]
+        df.columns = ["day", "EURO"]
+    
+    elif num_currencies == 2:
+        df = df[["Time Serie", "EURO AREA - EURO/US$", "UNITED KINGDOM - UNITED KINGDOM POUND/US$"]]
+        df.columns = ["day", "EURO", "POUND"]
+    
     df["day"] = pd.to_datetime(df["day"])
     return df.set_index("day")
 

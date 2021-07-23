@@ -1,4 +1,5 @@
 import torch
+from torch.utils.data import Dataset
 
 
 def pred_accuracy(z, y):
@@ -39,3 +40,15 @@ def train_net(
             acc = pred_accuracy(output, test_data.y)
         test_history.append((cost, acc, batchsize))
     return train_history, test_history
+
+class BasicData(Dataset):
+    def __init__(self, x, y):
+        super().__init__()
+        self.x = x
+        self.y = y
+
+    def __len__(self):
+        return self.x.shape[0]
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]

@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+from torch import nn
 
 
 def pred_accuracy(z, y):
@@ -44,11 +45,48 @@ def train_net(
 class BasicData(Dataset):
     def __init__(self, x, y):
         super().__init__()
-        self.x = x
-        self.y = y
+        self.x = torch.tensor(x).float()
+        self.y = torch.tensor(y).float()
 
     def __len__(self):
         return self.x.shape[0]
 
     def __getitem__(self, idx):
         return self.x[idx], self.y[idx]
+
+class LSTM(nn.Module):
+
+    def __init__(self, input_size, hidden_size, num_layers, out_d):
+        super(LSTM, self).__init__()
+
+        self.num_layers = num_layers
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+#         self.seq_length = seq_length
+
+        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, batch_first=True)
+
+        self.fc = nn.Linear(num_layers * hidden_size, out_d)
+
+    def forward(self, x):
+        h_0 = torch.zeros(
+            self.num_layers, x.shape[0], self.hidden_size)
+
+        c_0 = torch.zeros(
+            self.num_layers, x.shape[0], self.hidden_size)
+#         print(type(x))
+#         print(x.shape)
+#         print(x)
+
+        # Propagate input through LSTM
+        ula, (h_out, _) = self.lstm(x, (h_0, c_0))
+#         print(h_out.shape)
+
+#         h_out = h_out.reshape(x.shape[0], self.hidden_size)
+        h_out = h_out.transpose(1,0).reshape(x.shape[0],-1)
+#         print(h_out.shape)
+
+        out = self.fc(h_out)
+
+        return out

@@ -55,3 +55,30 @@ def expand_columns(df, col_names, steps=1):
 
     # Drop the first few columns that don't have all the back steps
     return df.iloc[steps:]
+
+def backstep_columns(df, columns=['EURO'], steps=3):
+    N = df.shape[0] - steps
+    # Increment steps by 1 to account for the current day
+    steps = steps +1
+    output = np.zeros((N, steps, len(columns)))
+    for i, c in enumerate(columns):
+        for j in range(steps):
+            # Fill in backwards, so the oldest is last
+            output[:,steps-j-1,i] = df[c].shift(j)[steps-1:]
+    return output
+
+def train_test_split(features, targets, percentile=None, test_window=None):
+    """
+    :param percentile: float or None
+    :param test_window: tuple or None
+    """
+    if percentile is not None:
+        cutoff = int(features.shape[0]*percentile)
+        X_train, X_test = features[:cutoff], features[cutoff:]
+        y_train, y_test = targets[:cutoff], targets[cutoff:]
+    elif test_window is not None:
+        start = test_window[0]
+        end = test_window[1]
+        X_train, X_test = features[:start], features[start:end]
+        y_train, y_test = targets[:start], targets[start:end]
+    return X_train, X_test, y_train, y_test

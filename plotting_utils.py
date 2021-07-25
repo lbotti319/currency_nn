@@ -54,7 +54,7 @@ def plot_multi_scale(
         fig.tight_layout()  # otherwise the right y-label is slightly clipped
     if legend_left is not None:
         labels = [p.get_label() for p in plots]
-        ax1.legend(plots, labels, loc="center right")
+        ax1.legend(plots, labels, bbox_to_anchor=(1.4, 1))
     plt.show()
 
 

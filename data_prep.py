@@ -2,18 +2,34 @@ import pandas as pd
 import numpy as np
 
 
-def fetch_data(filepath="data/Foreign_Exchange_Rates.csv", num_currencies=1):
+def fetch_data():
     df = pd.read_csv("data/Foreign_Exchange_Rates.csv", index_col=0, na_values=["ND"])
-    if num_currencies == 1:
-        df = df[["Time Serie", "EURO AREA - EURO/US$"]]
-        df.columns = ["day", "EURO"]
-    
-    elif num_currencies == 2:
-        df = df[["Time Serie", "EURO AREA - EURO/US$", "UNITED KINGDOM - UNITED KINGDOM POUND/US$"]]
-        df.columns = ["day", "EURO", "POUND"]
+    df = df[["Time Serie", "EURO AREA - EURO/US$"]]
+    df.columns = ["day", "EURO"]
     
     df["day"] = pd.to_datetime(df["day"])
-    return df.set_index("day")
+    df.set_index("day", inplace=True)
+    df = interpolate(df)
+    emu = _get_emu()
+    
+    return df.join(emu, how='left').interpolate().fillna(0.0)
+
+def _get_emu():
+    raw_df = pd.read_csv('data/irt_lt_mcby_d.tsv.gz', sep="\t", na_values=[": z"])
+    raw_df.head()
+    df = raw_df.set_index(raw_df['int_rt,geo\\time'].str.split(",").apply(lambda x: x[1])).drop('int_rt,geo\\time', axis=1)
+    # df.index.rename('date', inplace=True)
+    df = df.transpose()
+    df.reset_index(inplace=True)
+    df['date'] = df['index'].str.strip()
+    df.drop('index', axis=1, inplace=True)
+    df['date'] = pd.to_datetime(df['date'], format="%YM%mD%d")
+    df.set_index('date', inplace=True)
+    df.columns.rename('country_code', inplace=True)
+    for c in df.columns:
+        df[c] = pd.to_numeric(df[c], errors='coerce')
+    # Drop columns with lots of nans, or that are hard to interpolate
+    return df.drop(['EE', 'HR', 'RO', 'BG', 'SI'], axis=1)
 
 
 def interpolate(df):
@@ -56,12 +72,12 @@ def expand_columns(df, col_names, steps=1):
     # Drop the first few columns that don't have all the back steps
     return df.iloc[steps:]
 
-def backstep_columns(df, columns=['EURO'], steps=3):
+def backstep_columns(df, steps=3):
     N = df.shape[0] - steps
     # Increment steps by 1 to account for the current day
     steps = steps +1
-    output = np.zeros((N, steps, len(columns)))
-    for i, c in enumerate(columns):
+    output = np.zeros((N, steps, len(df.columns)))
+    for i, c in enumerate(df.columns):
         for j in range(steps):
             # Fill in backwards, so the oldest is last
             output[:,steps-j-1,i] = df[c].shift(j)[steps-1:]

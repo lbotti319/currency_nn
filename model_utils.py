@@ -10,7 +10,7 @@ def pred_accuracy(z, y):
 
 
 def train_net(
-    model, train_loader, test_data, loss_fn=None, epochs=200, learning_rate=0.01
+    model, train_loader, test_data, loss_fn=None, epochs=200, learning_rate=0.01, device="cpu"
 ):
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
     if loss_fn is None:
@@ -43,10 +43,10 @@ def train_net(
     return train_history, test_history
 
 class BasicData(Dataset):
-    def __init__(self, x, y):
+    def __init__(self, x, y, device='cpu'):
         super().__init__()
-        self.x = torch.tensor(x).float()
-        self.y = torch.tensor(y).float()
+        self.x = torch.tensor(x).float().to(device)
+        self.y = torch.tensor(y).float().to(device)
 
     def __len__(self):
         return self.x.shape[0]
@@ -70,10 +70,10 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(num_layers * hidden_size, out_d)
 
     def forward(self, x):
-        h_0 = torch.zeros(
+        h_0 = x.new_zeros(
             self.num_layers, x.shape[0], self.hidden_size)
 
-        c_0 = torch.zeros(
+        c_0 = x.new_zeros(
             self.num_layers, x.shape[0], self.hidden_size)
 #         print(type(x))
 #         print(x.shape)

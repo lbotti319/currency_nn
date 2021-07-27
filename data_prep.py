@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import torch
 
 
 def fetch_data():
@@ -83,7 +84,7 @@ def backstep_columns(df, steps=3):
             output[:,steps-j-1,i] = df[c].shift(j)[steps-1:]
     return output
 
-def train_test_split(features, targets, percentile=None, test_window=None):
+def train_test_split(features, targets, percentile=None, test_window=None, device=None):
     """
     :param percentile: float or None
     :param test_window: tuple or None

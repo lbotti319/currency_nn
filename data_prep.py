@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 
-def fetch_data():
+def fetch_data(augment=True):
     df = pd.read_csv("data/Foreign_Exchange_Rates.csv", index_col=0, na_values=["ND"])
     df = df[["Time Serie", "EURO AREA - EURO/US$"]]
     df.columns = ["day", "EURO"]
@@ -11,9 +11,10 @@ def fetch_data():
     df["day"] = pd.to_datetime(df["day"])
     df.set_index("day", inplace=True)
     df = interpolate(df)
-    emu = _get_emu()
-    
-    return df.join(emu, how='left').interpolate().fillna(0.0)
+    if augment:
+        emu = _get_emu()
+        df = df.join(emu, how='left').interpolate().fillna(0.0)
+    return df
 
 def _get_emu():
     raw_df = pd.read_csv('data/irt_lt_mcby_d.tsv.gz', sep="\t", na_values=[": z"])

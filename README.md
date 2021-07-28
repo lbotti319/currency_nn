@@ -1,10 +1,11 @@
 # currency_nn
+
+
+## Data
+
 Neural net project with the kaggle currency dataset: https://www.kaggle.com/brunotly/foreign-exchange-rates-per-dollar-20002019
 
 Dataset is augmented with EMU convergence criterion series data: https://data.europa.eu/data/datasets/o9zmuyfsqergpapzcuzsqg?locale=en
-
-LSTM notebook is based off of code from this Google Colab notebook: https://colab.research.google.com/github/dlmacedo/starter-academic/blob/master/content/courses/deeplearning/notebooks/pytorch/Time_Series_Prediction_with_LSTM_Using_PyTorch.ipynb#scrollTo=CKEzO1jzKydL
-
 
 
 ## Notebooks
@@ -18,3 +19,7 @@ LSTM notebook is based off of code from this Google Colab notebook: https://cola
 * DeepNet: Experiment with an LSTM with multiple fully connected layers at the end.
 
 * Backtesting: Framework for backtesting models
+
+## Credit
+
+LSTM notebook is based off of code from this Google Colab notebook: https://colab.research.google.com/github/dlmacedo/starter-academic/blob/master/content/courses/deeplearning/notebooks/pytorch/Time_Series_Prediction_with_LSTM_Using_PyTorch.ipynb#scrollTo=CKEzO1jzKydL

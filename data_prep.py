@@ -4,6 +4,9 @@ import torch
 
 
 def fetch_data(augment=True):
+    """
+    Returns EURO price by day. If augment is true, it also has the EMU data as feature columns
+    """
     df = pd.read_csv("data/Foreign_Exchange_Rates.csv", index_col=0, na_values=["ND"])
     df = df[["Time Serie", "EURO AREA - EURO/US$"]]
     df.columns = ["day", "EURO"]
@@ -17,6 +20,9 @@ def fetch_data(augment=True):
     return df
 
 def _get_emu():
+    """
+    Retrieves the EMU data and cleans it. Drops columns with lots of NaN values.
+    """
     raw_df = pd.read_csv('data/irt_lt_mcby_d.tsv.gz', sep="\t", na_values=[": z"])
     raw_df.head()
     df = raw_df.set_index(raw_df['int_rt,geo\\time'].str.split(",").apply(lambda x: x[1])).drop('int_rt,geo\\time', axis=1)
@@ -35,6 +41,9 @@ def _get_emu():
 
 
 def interpolate(df):
+    """
+    Ensures every day from in the range is present in the dataset. Missing values are interpolated
+    """
     work_df = df.copy()
     work_df = work_df.join(
         pd.DataFrame(index=pd.date_range("2000-01-03", "2019-12-31")), how="outer"
@@ -45,6 +54,10 @@ def interpolate(df):
 
 
 def set_target(df, window=1, target_col="EURO"):
+    """
+    Creates a target column looking forward "window" number of days
+    Drops samples without targets
+    """
     df = df.copy()
 
     df["target"] = df[target_col].shift(-1 * window)
@@ -65,6 +78,8 @@ def expand_columns(df, col_names, steps=1):
     Make backstep features for each column in `col_names`
 
     :param steps: The number of backsteps to go
+    
+    Returns a two dimensional dataframe (samples, features)
     """
     df = df.copy()
     for col_name in col_names:
@@ -75,6 +90,9 @@ def expand_columns(df, col_names, steps=1):
     return df.iloc[steps:]
 
 def backstep_columns(df, steps=3):
+    """
+    Returns a three dimensional dataframe (samples, steps, features)
+    """
     N = df.shape[0] - steps
     # Increment steps by 1 to account for the current day
     steps = steps +1
@@ -85,10 +103,15 @@ def backstep_columns(df, steps=3):
             output[:,steps-j-1,i] = df[c].shift(j)[steps-1:]
     return output
 
-def train_test_split(features, targets, percentile=None, test_window=None, device=None):
+def train_test_split(features, targets, percentile=None, test_window=None):
     """
+    Splits the data into train and test sets. If percentile is provided, it splits the whole series.
+    If test_window is provided it returns all samples before the window as the train set, and the window as the test set.
+    Samples after the window are ignored. Used for backtesting
+    
+    
     :param percentile: float or None
-    :param test_window: tuple or None
+    :param test_window: tuple or None 
     """
     if percentile is not None:
         cutoff = int(features.shape[0]*percentile)

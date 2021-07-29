@@ -43,6 +43,9 @@ def train_net(
     return train_history, test_history
 
 class BasicData(Dataset):
+    """
+    Basic Dataset class to be fed into a data loader
+    """
     def __init__(self, x, y, device='cpu'):
         super().__init__()
         self.x = torch.tensor(x).float().to(device)

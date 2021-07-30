@@ -1,5 +1,9 @@
 # currency_nn
 
+Author: Luke Botti
+
+Final project for Math 514: Intro to Neural Networks
+
 
 ## Data
 
